@@ -1,2 +1,2 @@
-# sig
-Tiny signals library
+# ecto-vdom
+virtual dom library
