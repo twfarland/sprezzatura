@@ -233,8 +233,6 @@ function updateFieldAttributes (D, AAttrs, BAttrs) {
 // This is the default strategy
 function updateChildrenPairwise (D, DChildren, AChildren, BChildren) {
 
-    console.log('updateChildrenPairwise')
-
     var d, a, b,
         existsD, existsA, existsB,
         i
@@ -277,8 +275,6 @@ function updateChildrenPairwise (D, DChildren, AChildren, BChildren) {
 // child and all its attributes/children
 function updateChildrenKeyed (D, DChildren, AChildren, BChildren) {
 
-    console.log('updateChildrenKeyed')
-
     var d, a, b, i
     var AKeys = {} // { id: Node }
     var AKey
@@ -299,7 +295,6 @@ function updateChildrenKeyed (D, DChildren, AChildren, BChildren) {
     for (AKey in AKeys) {
         if (BKeys[AKey] === undefined) {
             D.removeChild(AKeys[AKey].dom)
-            console.log('removed')
         }
     } 
 
@@ -310,11 +305,9 @@ function updateChildrenKeyed (D, DChildren, AChildren, BChildren) {
 
         if (ANode === undefined) {
             insertBeforeIndex(D, i, vDomToDom(b))
-            console.log('inserted')
 
         } else {
             updateDom(ANode.dom, ANode.vDom, b) // assume they're the same type if they have the same id
-            console.log('updated')
         }
     }
 }
