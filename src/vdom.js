@@ -1,6 +1,11 @@
+// Js types
 var UNDEFINED = 'undefined'
 var STRING = 'string'
+var NUMBER = 'number'
 var FUNCTION = 'function'
+var OBJECT = '[object Object]'
+
+// Props
 var KEY = 'key'
 var VALUE = 'value'
 var CHECKED = 'checked'
@@ -8,23 +13,47 @@ var SELECTED = 'selected'
 var FOCUS = 'focus'
 var ON = 'on'
 
+// Html
 var FIELD_ELEMENTS = { input:1, select:1, textarea:1 }
 var VOID_ELEMENTS = { area:1, base:1, br:1, col:1, command:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, meta:1, param:1, source:1, track:1, wbr:1 };
 
+// vDomType
+var VATOM = 0
+var VNODE = 1
+var VCHILD = 2
+var VRENDERED = 3
+var VNULL = 4
 
 /*
-vDom :: [String] 
-      | [String, {}] 
-      | [String, {}, []] 
-      | [Function, {}] 
-      | Atom
-*/
+vAtom :: 
+    String
+    Number
 
+vNode :: 
+    [String] 
+    [String, { attrs }] 
+    [String, { attrs }, [vDom ...]] 
+
+vChild ::
+    [Function, { params } ...]
+
+vRendered ::
+    [true, vChild, vDom]    
+
+vDom :: 
+    vAtom
+    vNode
+    vChild
+    vRendered
+    vNull
+*/
 
 
 /// ---------- UTILS ----------
 
-var slice = Array.prototype.slice;
+var slice = Array.prototype.slice
+var toString = Object.prototype.toString
+
 
 try {
     slice.call(document.body.childNodes)
@@ -36,6 +65,27 @@ try {
         	res.push(this[i]) 
         }
         return res  
+    }
+}
+
+
+// vDom -> vDomType
+function getType (vDom) {
+    if (vDom instanceof Array) {
+        if (typeof vDom[0] === FUNCTION) {
+            return VCHILD
+
+        } else if (vDom[0] === true) {
+            return VRENDERED
+
+        } else {    
+            return VNODE
+        }
+    } else if (typeof vDom === STRING || typeof vDom === NUMBER) {
+        return VATOM
+
+    } else {
+        return VNULL
     }
 }
 
@@ -71,25 +121,33 @@ function insertBeforeIndex (parent, i, child) {
 // --------- UPDATE ----------
 
 
-
 // Node -> VDom -> VDom -> _
 // A and B should only ever be the same Tag or Function
 function updateDom (D, A, B) {
 
-    switch (typeof A[0]) {
+    switch (getType(A)) {
 
-        case FUNCTION:
+        case VCHILD:
 
-            if (!A[0].shouldUpdate || A[0].shouldUpdate(A[1], B[1])) {
+            renderChild(A) // modifies A
 
-                if (!A[2]) { A[2] = A[0](A[1] || {}) }
-                if (!B[2]) { B[2] = B[0](B[1] || {}) }
+            updateDom(D, A, B)
 
-                updateDom(D, A[2], B[2])  
-            }
             break
 
-        case STRING:
+        case VRENDERED:
+
+            if (!A[0].shouldUpdate || A[0].shouldUpdate(A.slice(1), B.slice(1))) {
+
+                transfer A to B
+            }
+
+            // transfer 
+
+            break
+                
+
+        case VNODE:
 
             if (A[1] || B[1]) {
                 (FIELD_ELEMENTS[D.tagName.toLowerCase()] ? 
