@@ -121,28 +121,57 @@ function insertBeforeIndex (parent, i, child) {
 // --------- UPDATE ----------
 
 
+// vChild -> _
+// Mutates A into vRendered
+function renderChild (vChild) {
+    var vDom = vChild[0].apply(null, vChild.slice(1))
+    var vChildClone = vChild.slice()
+    vChild.length = 0
+    vChild.push(true)
+    vChild.push(vChildClone)
+    vChild.push(vDom)
+}
+
+
+// vRendered -> vChild -> _
+// mutates B, so it has same contents as A
+function transferRendered (A, B) {
+    B.length = 0
+    for (var i = 0; i < A.length; i++) {
+        B.push(A[i])
+    }
+}
+
+
 // Node -> VDom -> VDom -> _
-// A and B should only ever be the same Tag or Function
+// A and B should only ever be the same Tag or Child (rendered or unrendered)
 function updateDom (D, A, B) {
 
     switch (getType(A)) {
 
         case VCHILD:
 
-            renderChild(A) // modifies A
-
+            renderChild(A) // mutates A
             updateDom(D, A, B)
 
             break
 
         case VRENDERED:
 
-            if (!A[0].shouldUpdate || A[0].shouldUpdate(A.slice(1), B.slice(1))) {
+            var vChildA = A[1]
+            var vDomA   = A[2]
+            var fA      = vChildA[0]
 
-                transfer A to B
+            if (!fA.shouldUpdate || fA.shouldUpdate(vChildA.slice(1), vChildB.slice(1))) {
+
+                transferRendered(A, B) // transfer A to B, so it becomes rendered without execution
+
+            } else {
+                // render B
+                renderChild(B) // mutates B
+
+                updateDom(D, vDomA, B[2])
             }
-
-            // transfer 
 
             break
                 
@@ -293,7 +322,8 @@ function updateChildrenPairwise (D, DChildren, AChildren, BChildren) {
 
     var d, a, b,
         existsD, existsA, existsB,
-        i
+        i,
+        aType, bType
 
     for (i = 0; i < Math.max(AChildren.length, BChildren.length); i++) {
 
@@ -311,10 +341,12 @@ function updateChildrenPairwise (D, DChildren, AChildren, BChildren) {
             D.removeChild(d)
 
         } else if (existsD && existsA && existsB) { // both
+
+            aType = getType(a)
+            bType = getType(b)
         	
-            if ((a instanceof Array) &&
-                (a[0] === b[0]) &&
-            	(typeof a[0] === STRING || typeof a[0] === FUNCTION)) { 
+            if (aType === bType && (aType === VNODE || aType === VCHILD) ||
+               (aType === VRENDERED && bType === VCHILD && a[1][0] === b[0])) {
 	                
 	            updateDom(d, a, b) // same tag or function, explore
 
@@ -384,54 +416,56 @@ function htmlStringToDom (str) {
 }
 
 
-
 // vDom -> HtmlString
 function vDomToHtmlString (vDom) {
 
-	var v = vDom
+    switch (getType(vDom)) {
 
-    if (vDom instanceof Array) {
+        case VCHILD:
+            renderChild(vDom)
+            return vNodeToHtmlString(vDom[2])
 
-    	if (typeof vDom[0] === FUNCTION) {
-    		v = vDom[0](vDom[1])
-            if (!vDom[2]) { vDom[2] = v }
-    	}
+        case VRENDERED:
+            return vNodeToHtmlString(vDom[2])
 
-        var tag = v[0],
-            attrs = v[1],
-            children = v[2],
-        	a,
-        	attrPairs = [],
-        	c,
-    		res
+        case VNODE:
+            return vNodeToHtmlString(vDom)
 
-        for (a in attrs) {
-            if (truthy(attrs[a]) && a !== KEY && a !== ON) { 
-            	attrPairs.push(a + '="' + attrs[a] + '"') 
-            }
+        case VATOM:
+            return v
+
+        default:
+            return ''
+}
+
+
+// vNode -> HtmlString
+function vNodeToHtmlString (v) {
+
+    var tag = v[0]
+    var attrs = v[1]
+    var children = v[2]
+    var a
+    var attrPairs = []
+    var c
+    var res
+
+    for (a in attrs) {
+        if (truthy(attrs[a]) && a !== KEY && a !== ON) { 
+            attrPairs.push(a + '="' + attrs[a] + '"') 
         }
+    }
 
-        res = '<' + [tag].concat(attrPairs).join(' ') + '>'
+    res = '<' + [tag].concat(attrPairs).join(' ') + '>'
 
-        if (!VOID_ELEMENTS[tag]) {
-            for (c = 0; c < children.length; c++) { 
-            	res += vDomToHtmlString(children[c]) 
-            }
-            res += '</' + tag + '>'
+    if (!VOID_ELEMENTS[tag]) {
+        for (c = 0; c < children.length; c++) { 
+            res += vDomToHtmlString(children[c]) 
         }
-
-        return res
-
-    } else if (typeof v === STRING) { // atom
-        return v
-
-    } else if (v !== false && v !== null && typeof v !== UNDEFINED && v.toString) {
-        return v.toString()
-
-    } else {
-        return ''
+        res += '</' + tag + '>'
     }
 }
+
 
 // vDom -> Node
 function vDomToDom (vDom) {
@@ -458,10 +492,18 @@ function bindInitialEvents (D, vDom) {
 
         dChildren = slice.call(D.childNodes)
 
-        if (typeof vDom[0] === FUNCTION) { 
-            v = vDom[2] // already generated
-        }
+        switch (getType(vDom)) {
 
+            case VCHILD:
+                renderChild(vDom)
+                v = vDom[2]
+                break
+
+            case VRENDERED:
+                v = vDom[2]
+                break
+        }
+        
         if (v[1] && v[1].on) {
             bindEvents(D, v[1].on) 
         }
