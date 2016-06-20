@@ -150,15 +150,15 @@ function updateDom (current, next, D, DParent) {
             switch (nextType) {
 
                 case VNODE:
-                    updateAttributes(current[1], next[1], D)
-                    updateChildren(current[2], next[2], D)
+                    updateAttributes(current[1] || {}, next[1] || {}, D)
+                    updateChildren(current[2] || [], next[2] || [], D)
                     break
 
                 case VCHILD:
                     if (!next[0].shouldUpdate || next[0].shouldUpdate(current[1], next[1])) {
                         next[2] = next[0](next[1])
-                        updateAttributes(current[2][1], next[2][1], D)
-                        updateChildren(current[2][2], next[2][2], D)
+                        updateAttributes(current[2][1] || {}, next[2][1] || {}, D)
+                        updateChildren(current[2][2] || [], next[2][2] || [], D)
 
                     } else {
                         next[2] = current[2]
