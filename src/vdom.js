@@ -181,7 +181,7 @@ function updateAttributes (currentAttrs, nextAttrs, D) {
     var nextVal
     var evt
     var currentEvts = currentAttrs[ON]
-    var nextEvts    = nextEvts[ON]
+    var nextEvts    = nextAttrs[ON]
 
     for (a in currentAttrs) { // remove all those not in B from A
 
@@ -288,10 +288,11 @@ function vDomToHtmlString (vDom) {
             return vNodeToHtmlString(vDom)
 
         case VATOM:
-            return v
+            return vDom
 
         default:
             return ''
+    }
 }
 
 
@@ -324,6 +325,8 @@ function vNodeToHtmlString (vDom) {
         }
         res += '</' + tag + '>'
     }
+
+    return res
 }
 
 
