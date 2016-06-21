@@ -69,14 +69,14 @@ function keyOf (v, i) {
 
 
 // [vDom] -> [{ key: *, vDom: vDom, pos: i }]
-function groupChildren (vDoms) {
+function groupChildren (vDoms, DChildren) {
     var res = []
     var v
     var i
     for (i = 0; i < vDoms.length; i++) {
         v = vDoms[i]
         if (!(v === false || v === undefined || v === null)) {
-            res.push({ key: keyOf(v, i), vDom: v, pos: i })
+            res.push({ key: keyOf(v, i), vDom: v, element: DChildren && DChildren[i] })
         }
     }
     return res
@@ -89,12 +89,12 @@ function getKey (v) {
 }
 
 
-// [vDom] -> [vDom] -> domNode -> _
-function updateChildren (prevChildren, nextChildren, D) {
+// [vDom] -> [vDom] -> domNode -> domNode
+function updateChildren (currentChildren, nextChildren, D) {
 
     dift.default(
 
-        groupChildren(prevChildren),
+        groupChildren(currentChildren, D.childNodes),
         groupChildren(nextChildren),
 
         function effect (type, current, next, pos) {
@@ -105,26 +105,30 @@ function updateChildren (prevChildren, nextChildren, D) {
                     break
 
                 case dift.UPDATE: // old, new, null
-                    updateDom(current.vDom, next.vDom, D.childNodes[current.pos], D)
+                    updateDom(current.vDom, next.vDom, current.element, D)
                     break
 
                 case dift.MOVE: // old, new, newPos
-                    D.insertBefore(D.childNodes[current.pos], D.childNodes[pos])
-                    updateDom(current.vDom, next.vDom, D.childNodes[current.pos], D)
+                    D.insertBefore(
+                        updateDom(current.vDom, next.vDom, current.element, D), 
+                        current.element
+                    )
                     break
 
                 case dift.REMOVE: // null, old, null
-                    D.removeChild(D.childNodes[current.pos])
+                    D.removeChild(current.element)
                     break
             }
         },
 
         getKey
     )
+
+    return D
 }
 
 
-// vDom -> vDom -> domNode -> domNode _
+// vDom -> vDom -> domNode -> domNode -> domNode
 function updateDom (current, next, D, DParent) {
 
     if (D === undefined) { throw new Error('No dom node to update') }
@@ -170,10 +174,12 @@ function updateDom (current, next, D, DParent) {
             DParent.replaceChild(vDomToDom(next), D)
         }
     }
+
+    return D
 }
 
 
-// vDom -> vDom -> domNode -> _
+// vDom -> vDom -> domNode -> domNode
 function updateAttributes (currentAttrs, nextAttrs, D) {
 
     var a
@@ -264,6 +270,8 @@ function updateAttributes (currentAttrs, nextAttrs, D) {
             }
         }
     }
+
+    return D
 }
 
 
