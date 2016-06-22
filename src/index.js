@@ -396,5 +396,3 @@ module.exports = {
     vDomToDom: vDomToDom,
     updateDom: updateDom
 }
-
-
