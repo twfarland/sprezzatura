@@ -5,5 +5,8 @@
   "homepage": "http://github.com/twfarland/sprezzatura",
   "main": "src/index.js",
   "repository": "https://github.com/twfarland/sprezzatura",
-  "author": "Tim Farland <twfarland@gmail.com>"
+  "author": "Tim Farland <twfarland@gmail.com>",
+  "dependencies": {
+  	"dift": "^0.1.12"
+  }
 }
