@@ -47,12 +47,6 @@ vDom ::
 */
 
 
-// * -> bool
-function truthy (c) {
-    return !(c === undefined || c === null || c === false)
-}
-
-
 // vDom -> vDomType
 function getType (vDom) {
 
@@ -79,12 +73,12 @@ function groupChildren (vDoms, DChildren) {
     var res = []
     var v
     var i
-
     for (i = 0; i < vDoms.length; i++) {
         v = vDoms[i]
-        res.push({ key: keyOf(v, i), vDom: v, element: DChildren && DChildren[i] })
+        if (!(v === false || v === undefined || v === null)) {
+            res.push({ key: keyOf(v, i), vDom: v, element: DChildren && DChildren[i] })
+        }
     }
-
     return res
 }
 
@@ -96,15 +90,7 @@ function getKey (v) {
 
 
 // [vDom] -> [vDom] -> domNode -> domNode
-function updateChildren (current, next, D) {
-
-    var currentChildren = current[2] || []
-    var nextChildren = []
-
-    if (next[2]) {
-        next[2] = next[2].filter(truthy)
-        nextChildren = next[2]
-    }
+function updateChildren (currentChildren, nextChildren, D) {
 
     dift.default(
 
@@ -169,14 +155,17 @@ function updateDom (current, next, D, DParent) {
 
                 case VNODE:
                     updateAttributes(current[1] || {}, next[1] || {}, D)
-                    updateChildren(current, next, D)
+                    updateChildren(current[2] || [], next[2] || [], D)
                     break
 
                 case VCHILD:
-                    if (!next[0].shouldUpdate || next[0].shouldUpdate(current[1], next[1])) {
+                    if (next[0].shouldUpdate ? 
+                        next[0].shouldUpdate(current[1], next[1]) : 
+                        next[1] && current[1] && next[1] !== current[1]) {
+
                         next[2] = next[0](next[1])
                         updateAttributes(current[2][1] || {}, next[2][1] || {}, D)
-                        updateChildren(current[2], next[2], D)
+                        updateChildren(current[2][2] || [], next[2][2] || [], D)
 
                     } else {
                         next[2] = current[2]
@@ -208,7 +197,7 @@ function updateAttributes (currentAttrs, nextAttrs, D) {
         currentVal = currentAttrs[a]
         nextVal = nextAttrs[a]
 
-        if (!truthy(nextVal)) {
+        if (nextVal === undefined || nextVal === null || nextVal === false) {
 
             switch (a) {
                 case ON:
@@ -237,7 +226,7 @@ function updateAttributes (currentAttrs, nextAttrs, D) {
         currentVal = currentAttrs[a]
         nextVal = nextAttrs[a]
 
-        if (truthy(nextVal) && 
+        if (!(nextVal === undefined || nextVal === null || nextVal === false) && 
             nextVal !== currentVal &&
             typeof nextVal !== FUNCTION) {
 
@@ -327,20 +316,15 @@ function vNodeToHtmlString (vDom) {
     var tag = vDom[0]
     var attrs = vDom[1]
     var val
-    var children = []
+    var children = vDom[2]
     var a
     var attrPairs = []
     var c
     var res
 
-    if (vDom[2]) {
-        vDom[2] = vDom[2].filter(truthy)
-        children = vDom[2]
-    }
-
     for (a in attrs) {
         val = attrs[a]
-        if (truthy(val) && a !== KEY && a !== ON) { 
+        if (!(val === undefined || val === null || val === false) && a !== KEY && a !== ON) { 
             attrPairs.push(a + '="' + val + '"') 
         }
     }
@@ -348,8 +332,10 @@ function vNodeToHtmlString (vDom) {
     res = '<' + [tag].concat(attrPairs).join(' ') + '>'
 
     if (!VOID_ELEMENTS[tag]) {
-        for (c = 0; c < children.length; c++) {
-            res += vDomToHtmlString(children[c]) 
+        for (c = 0; c < children.length; c++) { 
+            if (!(c === undefined || c === null || c === false)) {
+                res += vDomToHtmlString(children[c]) 
+            }
         }
         res += '</' + tag + '>'
     }
