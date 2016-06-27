@@ -265,7 +265,10 @@ function updateAttributes (currentAttrs, nextAttrs, D) {
             }
         }
         for (evt in nextEvts) {
-            if (!currentEvts[evt] && currentEvts[evt] !== nextEvts[evt]) { 
+            if (currentEvts[evt] !== nextEvts[evt]) {
+                if (currentEvts[evt]) {
+                    D.removeEventListener(evt, currentEvts[evt]) 
+                }
                 D.addEventListener(evt, nextEvts[evt]) 
             }
         }
