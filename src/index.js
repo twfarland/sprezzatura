@@ -99,9 +99,12 @@ function updateChildren (currentChildren, nextChildren, D) {
 
         function effect (type, current, next, pos) {
 
+            var newNode
+
             switch (type){
                 case dift.CREATE: // null, new, posToCreate
-                    D.insertBefore(vDomToDom(next.vDom), D.childNodes[pos] || null)
+                    newNode = vDomToDom(next.vDom)
+                    if (newNode) D.insertBefore(newNode, D.childNodes[pos] || null)
                     break
 
                 case dift.UPDATE: // old, new, null
@@ -137,9 +140,11 @@ function updateDom (current, next, D, DParent) {
     
     var currentExists = current !== undefined
     var nextExists    = next !== undefined
+    var newNode
 
     if (!currentExists && nextExists) {
-        DParent.appendChild(vDomToDom(next))
+        newNode = vDomToDom(next)
+        if (newNode) { DParent.appendChild(newNode) }
 
     } else if (currentExists && !nextExists) {
         DParent.removeChild(D)
@@ -174,7 +179,11 @@ function updateDom (current, next, D, DParent) {
             }
 
         } else if (current !== next) {
-            DParent.replaceChild(vDomToDom(next), D)
+            newNode = vDomToDom(next)
+            if (newNode) { 
+                DParent.replaceChild(newNode, D)
+                console.log(DParent.innerHTML, newNode, D) 
+            }
         }
     }
 
@@ -302,7 +311,7 @@ function vDomToHtmlString (vDom) {
             return vNodeToHtmlString(vDom)
 
         case VATOM:
-            return vDom
+            return String(vDom)
 
         default:
             return ''
@@ -315,17 +324,19 @@ function vNodeToHtmlString (vDom) {
 
     var tag = vDom[0]
     var attrs = vDom[1]
+    var children = vDom[2] || []
     var val
-    var children = vDom[2]
     var a
     var attrPairs = []
     var c
     var res
 
-    for (a in attrs) {
-        val = attrs[a]
-        if (!(val === undefined || val === null || val === false) && a !== KEY && a !== ON) { 
-            attrPairs.push(a + '="' + val + '"') 
+    if (attrs) {
+        for (a in attrs) {
+            val = attrs[a]
+            if (!(val === undefined || val === null || val === false) && a !== KEY && a !== ON) { 
+                attrPairs.push(a + '="' + val + '"') 
+            }
         }
     }
 
@@ -344,7 +355,7 @@ function vNodeToHtmlString (vDom) {
 }
 
 
-// vDom -> domNode
+// vDom -> domNode || undefined
 function vDomToDom (vDom) {
 
     switch (getType(vDom)) {
@@ -354,6 +365,9 @@ function vDomToDom (vDom) {
 
         case VNODE:
         case VCHILD: // child rendering is handled by vDomToHtmlString
+
+            if (vDom.length === 0) return undefined
+
             var el = document.createElement('div')
             el.innerHTML = vDomToHtmlString(vDom)
             var dom = el.firstChild
@@ -361,7 +375,7 @@ function vDomToDom (vDom) {
             return dom
 
         case VNULL:
-            throw new Error('Null vdom')
+            return undefined
     }
 }
 
@@ -372,6 +386,7 @@ function bindEvents (vDom, D) {
 
     var vType = getType(vDom)
     var vNode
+    var vAttrs
     var evts
     var evt
     var child
@@ -379,13 +394,16 @@ function bindEvents (vDom, D) {
 
     if (vType === VATOM || vType === VNULL) { return }
 
-    vNode = vType === VCHILD ? vDom[2] : vDom
-    evts = vNode[1][ON]
+    vNode    = vType === VCHILD ? vDom[2] : vDom
+    vAttrs   = vNode[1]
     children = vNode[2]
 
-    if (evts) {
-        for (evt in evts) {
-             D.addEventListener(evt, evts[evt])
+    if (vAttrs) {
+        evts = vAttrs[ON]
+        if (evts) {
+            for (evt in evts) {
+                 D.addEventListener(evt, evts[evt])
+            }
         }
     }
 
@@ -395,6 +413,7 @@ function bindEvents (vDom, D) {
         }
     }
 }
+
 
 
 module.exports = {

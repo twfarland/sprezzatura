@@ -7,6 +7,9 @@
   "repository": "https://github.com/twfarland/sprezzatura",
   "author": "Tim Farland <twfarland@gmail.com>",
   "dependencies": {
-  	"dift": "^0.1.12"
+    "dift": "^0.1.12"
+  },
+  "devDependencies": {
+    "mock-browser": "^0.92.12"
   }
 }
