@@ -75,9 +75,7 @@ function groupChildren (vDoms, DChildren) {
     var i
     for (i = 0; i < vDoms.length; i++) {
         v = vDoms[i]
-        if (!(v === false || v === undefined || v === null)) {
-            res.push({ key: keyOf(v, i), vDom: v, element: DChildren && DChildren[i] })
-        }
+        res.push({ key: keyOf(v, i), vDom: v, element: DChildren && DChildren[i] })
     }
     return res
 }
@@ -88,14 +86,22 @@ function getKey (v) {
     return v.key 
 }
 
+// vDom -> bool
+function isDefined (v) {
+    return !(v === false || v === undefined || v === null)
+}
 
-// [vDom] -> [vDom] -> domNode -> domNode
-function updateChildren (currentChildren, nextChildren, D) {
+
+// vDom -> vDom -> domNode -> domNode
+function updateChildren (current, next, D) {
+
+    // filters out empty children
+    next[2] = next[2] ? next[2].filter(isDefined) : []
 
     dift.default(
 
-        groupChildren(currentChildren, D.childNodes),
-        groupChildren(nextChildren),
+        groupChildren(current[2] || [], D.childNodes),
+        groupChildren(next[2]),
 
         function effect (type, current, next, pos) {
 
@@ -160,7 +166,7 @@ function updateDom (current, next, D, DParent) {
 
                 case VNODE:
                     updateAttributes(current[1] || {}, next[1] || {}, D)
-                    updateChildren(current[2] || [], next[2] || [], D)
+                    updateChildren(current, next, D)
                     break
 
                 case VCHILD:
@@ -170,7 +176,7 @@ function updateDom (current, next, D, DParent) {
 
                         next[2] = next[0](next[1])
                         updateAttributes(current[2][1] || {}, next[2][1] || {}, D)
-                        updateChildren(current[2][2] || [], next[2][2] || [], D)
+                        updateChildren(current[2], next[2], D)
 
                     } else {
                         next[2] = current[2]
@@ -323,12 +329,16 @@ function vNodeToHtmlString (vDom) {
 
     var tag = vDom[0]
     var attrs = vDom[1]
-    var children = vDom[2] || []
+    var children
     var val
     var a
     var attrPairs = []
     var c
     var res
+
+    // filters out empty children
+    vDom[2] = vDom[2] ? vDom[2].filter(isDefined) : []
+    children = vDom[2]
 
     if (attrs) {
         for (a in attrs) {

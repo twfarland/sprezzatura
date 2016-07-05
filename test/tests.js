@@ -105,6 +105,7 @@
 		domToHtmlString(vDomToDom([A, { href: '#' }, ['abc']])) === '<a href="#"><span>abc</span></a>',
 		domToHtmlString(vDomToDom([Div, {}, [ 'a', [Div, {}, ['b']], 'c' ]])) === '<div><span>a</span><div><span>b</span></div><span>c</span></div>',
 		domToHtmlString(vDomToDom([Div, {}, ['a','b','c']])) === '<div><span>a</span><span>b</span><span>c</span></div>',
+		domToHtmlString(vDomToDom([Div, {}, ['a',false,'b',undefined,null,'c',null]])) === '<div><span>a</span><span>b</span><span>c</span></div>',
 	
 		checkUpdate(parent, [Div, {}, []], [Div, {}, ['a']]),
 		checkUpdate(parent, [Div, {}, []], [Br]),
@@ -112,7 +113,9 @@
 		checkUpdate(parent, 'a', 'b'),
 		checkUpdate(parent, 'a', [Div]),
 		checkUpdate(parent, 1, 0),
-		checkUpdate(parent, [Div, {}, ['a','b','c']], [Div, {}, [123]])
+		checkUpdate(parent, [Div, {}, ['a','b','c']], [Div, {}, ['123']]),
+		checkUpdate(parent, [Div, {}, ['a',false,'b','c']], [Div, {}, ['c',false,'a','b']]),
+		checkUpdate(parent, [Div, {}, [undefined,undefined,'a',false,'b','c']], [Div, {}, ['c','d',123,false,'a','b',undefined]])
 	])
 	
 	
@@ -202,9 +205,7 @@
 	    var i
 	    for (i = 0; i < vDoms.length; i++) {
 	        v = vDoms[i]
-	        if (!(v === false || v === undefined || v === null)) {
-	            res.push({ key: keyOf(v, i), vDom: v, element: DChildren && DChildren[i] })
-	        }
+	        res.push({ key: keyOf(v, i), vDom: v, element: DChildren && DChildren[i] })
 	    }
 	    return res
 	}
@@ -215,14 +216,22 @@
 	    return v.key 
 	}
 	
+	// vDom -> bool
+	function isDefined (v) {
+	    return !(v === false || v === undefined || v === null)
+	}
 	
-	// [vDom] -> [vDom] -> domNode -> domNode
-	function updateChildren (currentChildren, nextChildren, D) {
+	
+	// vDom -> vDom -> domNode -> domNode
+	function updateChildren (current, next, D) {
+	
+	    // filters out empty children
+	    next[2] = next[2] ? next[2].filter(isDefined) : []
 	
 	    dift.default(
 	
-	        groupChildren(currentChildren, D.childNodes),
-	        groupChildren(nextChildren),
+	        groupChildren(current[2] || [], D.childNodes),
+	        groupChildren(next[2]),
 	
 	        function effect (type, current, next, pos) {
 	
@@ -287,7 +296,7 @@
 	
 	                case VNODE:
 	                    updateAttributes(current[1] || {}, next[1] || {}, D)
-	                    updateChildren(current[2] || [], next[2] || [], D)
+	                    updateChildren(current, next, D)
 	                    break
 	
 	                case VCHILD:
@@ -297,7 +306,7 @@
 	
 	                        next[2] = next[0](next[1])
 	                        updateAttributes(current[2][1] || {}, next[2][1] || {}, D)
-	                        updateChildren(current[2][2] || [], next[2][2] || [], D)
+	                        updateChildren(current[2], next[2], D)
 	
 	                    } else {
 	                        next[2] = current[2]
@@ -450,12 +459,16 @@
 	
 	    var tag = vDom[0]
 	    var attrs = vDom[1]
-	    var children = vDom[2] || []
+	    var children
 	    var val
 	    var a
 	    var attrPairs = []
 	    var c
 	    var res
+	
+	    // filters out empty children
+	    vDom[2] = vDom[2] ? vDom[2].filter(isDefined) : []
+	    children = vDom[2]
 	
 	    if (attrs) {
 	        for (a in attrs) {

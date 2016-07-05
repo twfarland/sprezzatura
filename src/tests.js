@@ -56,6 +56,7 @@ console.log([
 	domToHtmlString(vDomToDom([A, { href: '#' }, ['abc']])) === '<a href="#"><span>abc</span></a>',
 	domToHtmlString(vDomToDom([Div, {}, [ 'a', [Div, {}, ['b']], 'c' ]])) === '<div><span>a</span><div><span>b</span></div><span>c</span></div>',
 	domToHtmlString(vDomToDom([Div, {}, ['a','b','c']])) === '<div><span>a</span><span>b</span><span>c</span></div>',
+	domToHtmlString(vDomToDom([Div, {}, ['a',false,'b',undefined,null,'c',null]])) === '<div><span>a</span><span>b</span><span>c</span></div>',
 
 	checkUpdate(parent, [Div, {}, []], [Div, {}, ['a']]),
 	checkUpdate(parent, [Div, {}, []], [Br]),
@@ -63,7 +64,9 @@ console.log([
 	checkUpdate(parent, 'a', 'b'),
 	checkUpdate(parent, 'a', [Div]),
 	checkUpdate(parent, 1, 0),
-	checkUpdate(parent, [Div, {}, ['a','b','c']], [Div, {}, [123]])
+	checkUpdate(parent, [Div, {}, ['a','b','c']], [Div, {}, ['123']]),
+	checkUpdate(parent, [Div, {}, ['a',false,'b','c']], [Div, {}, ['c',false,'a','b']]),
+	checkUpdate(parent, [Div, {}, [undefined,undefined,'a',false,'b','c']], [Div, {}, ['c','d',123,false,'a','b',undefined]])
 ])
 
 
