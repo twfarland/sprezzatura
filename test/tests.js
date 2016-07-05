@@ -84,7 +84,7 @@
 		var vDomB2 = vDomB instanceof Array ? vDomB.slice() : vDomB
 		parent.appendChild(dom)
 		updateDom(vDomA, vDomB, dom, parent)
-		return [domToHtmlString(parent.firstChild), vDomToHtmlString(vDomB2)]
+		return domToHtmlString(parent.firstChild) === vDomToHtmlString(vDomB2)
 	}
 	
 	
@@ -95,24 +95,28 @@
 		vDomToDom(undefined) === undefined,
 		vDomToDom([]) === undefined,
 	
-		domToHtmlString(vDomToDom('a')) === 'a',
-		domToHtmlString(vDomToDom('')) === '',
-		domToHtmlString(vDomToDom(1)) === '1',
-		domToHtmlString(vDomToDom(0)) === '0',
-	
+		domToHtmlString(vDomToDom('a')) === '<span>a</span>',
+		domToHtmlString(vDomToDom(1)) === '<span>1</span>',
+		domToHtmlString(vDomToDom(0)) === '<span>0</span>',
+		
 		domToHtmlString(vDomToDom([Br])) === '<br>',
 		domToHtmlString(vDomToDom([Div, {}, []])) === '<div></div>',
 		domToHtmlString(vDomToDom([A, { name: 'x' }])) === '<a name="x"></a>',
-		domToHtmlString(vDomToDom([A, { href: '#' }, ['abc']])) === '<a href="#">abc</a>',
-		domToHtmlString(vDomToDom([Div, {}, [ 'a', [Div, {}, ['b']], 'c' ]])) === '<div>a<div>b</div>c</div>',
+		domToHtmlString(vDomToDom([A, { href: '#' }, ['abc']])) === '<a href="#"><span>abc</span></a>',
+		domToHtmlString(vDomToDom([Div, {}, [ 'a', [Div, {}, ['b']], 'c' ]])) === '<div><span>a</span><div><span>b</span></div><span>c</span></div>',
+		domToHtmlString(vDomToDom([Div, {}, ['a','b','c']])) === '<div><span>a</span><span>b</span><span>c</span></div>',
 	
 		checkUpdate(parent, [Div, {}, []], [Div, {}, ['a']]),
 		checkUpdate(parent, [Div, {}, []], [Br]),
 		checkUpdate(parent, [Div], 'a'),
 		checkUpdate(parent, 'a', 'b'),
 		checkUpdate(parent, 'a', [Div]),
-		checkUpdate(parent, 1, 0)
+		checkUpdate(parent, 1, 0),
+		checkUpdate(parent, [Div, {}, ['a','b','c']], [Div, {}, [123]])
 	])
+	
+	
+
 
 /***/ },
 /* 1 */
@@ -305,7 +309,6 @@
 	            newNode = vDomToDom(next)
 	            if (newNode) { 
 	                DParent.replaceChild(newNode, D)
-	                console.log(DParent.innerHTML, newNode, D) 
 	            }
 	        }
 	    }
@@ -434,7 +437,7 @@
 	            return vNodeToHtmlString(vDom)
 	
 	        case VATOM:
-	            return String(vDom)
+	            return '<span>' + vDom + '</span>'
 	
 	        default:
 	            return ''
@@ -484,8 +487,6 @@
 	    switch (getType(vDom)) {
 	
 	        case VATOM:
-	            return document.createTextNode(vDom)
-	
 	        case VNODE:
 	        case VCHILD: // child rendering is handled by vDomToHtmlString
 	

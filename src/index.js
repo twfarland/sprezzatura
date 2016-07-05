@@ -182,7 +182,6 @@ function updateDom (current, next, D, DParent) {
             newNode = vDomToDom(next)
             if (newNode) { 
                 DParent.replaceChild(newNode, D)
-                console.log(DParent.innerHTML, newNode, D) 
             }
         }
     }
@@ -311,7 +310,7 @@ function vDomToHtmlString (vDom) {
             return vNodeToHtmlString(vDom)
 
         case VATOM:
-            return String(vDom)
+            return '<span>' + vDom + '</span>'
 
         default:
             return ''
@@ -361,8 +360,6 @@ function vDomToDom (vDom) {
     switch (getType(vDom)) {
 
         case VATOM:
-            return document.createTextNode(vDom)
-
         case VNODE:
         case VCHILD: // child rendering is handled by vDomToHtmlString
 
