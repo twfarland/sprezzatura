@@ -88,6 +88,11 @@
 	}
 	
 	
+	function Child ({ a }) {
+		return [Div, {}, [a]]
+	}
+	
+	
 	console.log([
 	
 		vDomToDom(false) === undefined,
@@ -107,6 +112,9 @@
 		domToHtmlString(vDomToDom([Div, {}, ['a','b','c']])) === '<div><span>a</span><span>b</span><span>c</span></div>',
 		domToHtmlString(vDomToDom([Div, {}, ['a',false,'b',undefined,null,'c',null]])) === '<div><span>a</span><span>b</span><span>c</span></div>',
 	
+		domToHtmlString(vDomToDom([Child, { a: 1 }])) === '<div><span>1</span></div>',
+		domToHtmlString(vDomToDom([Div, {}, [[Child, { a: 1 }]]])) === '<div><div><span>1</span></div></div>',
+	
 		checkUpdate(parent, [Div, {}, []], [Div, {}, ['a']]),
 		checkUpdate(parent, [Div, {}, []], [Br]),
 		checkUpdate(parent, [Div], 'a'),
@@ -115,7 +123,61 @@
 		checkUpdate(parent, 1, 0),
 		checkUpdate(parent, [Div, {}, ['a','b','c']], [Div, {}, ['123']]),
 		checkUpdate(parent, [Div, {}, ['a',false,'b','c']], [Div, {}, ['c',false,'a','b']]),
-		checkUpdate(parent, [Div, {}, [undefined,undefined,'a',false,'b','c']], [Div, {}, ['c','d',123,false,'a','b',undefined]])
+		checkUpdate(parent, [Div, {}, [undefined,undefined,'a',false,'b','c']], [Div, {}, ['c','d',123,false,'a','b',undefined]]),
+	
+		checkUpdate(parent, 
+			[Div, {}, [
+				[Div, { key: 1 }],
+				[Div, { key: 2 }],
+				[Div, { key: 3 }],
+			]],
+			[Div, {}, [
+				[Div, { key: 3 }],
+				[Div, { key: 2 }],
+				[Div, { key: 1 }],
+			]]
+		),
+		checkUpdate(parent, 
+			[Div, {}, [
+				[Div, { key: 1 }],
+				[Div, { key: 3 }],
+			]],
+			[Div, {}, [
+				[Div, { key: 3 }],
+				[Div, { key: 2 }],
+				[Div, { key: 1 }],
+			]]
+		),
+		checkUpdate(parent, 
+			[Div, {}, [
+				[Div, { key: 1 }],
+				[Div, { key: 2 }],
+				[Div, { key: 3 }],
+			]],
+			[Div, {}, [
+				[Div, { key: 2 }]
+			]]
+		),
+		checkUpdate(parent, 
+			[Div, {}, [
+				[Div, { key: 1 }],
+				[Div, { key: 2 }],
+				[Div, { key: 3 }],
+			]],
+			[Div, {}, []]
+		),
+		checkUpdate(parent, 
+			[Div, {}, []],
+			[Div, {}, [
+				[Div, { key: 3 }],
+				[Div, { key: 2 }],
+				[Div, { key: 1 }],
+			]]
+		),
+	
+		checkUpdate(parent, [Child, { a: 1 }], [Child, { a: 2 }]),
+		checkUpdate(parent, [Child, { a: 1 }], [A, { href: '#'}, ['x']]),
+		checkUpdate(parent, [Div, {}, []], [Child, { a: 1 }])		
 	])
 	
 	
@@ -225,8 +287,7 @@
 	// vDom -> vDom -> domNode -> domNode
 	function updateChildren (current, next, D) {
 	
-	    // filters out empty children
-	    next[2] = next[2] ? next[2].filter(isDefined) : []
+	    next[2] = next[2] ? next[2].filter(isDefined) : [] // !! mutates vDom !!
 	
 	    dift.default(
 	
@@ -466,8 +527,7 @@
 	    var c
 	    var res
 	
-	    // filters out empty children
-	    vDom[2] = vDom[2] ? vDom[2].filter(isDefined) : []
+	    vDom[2] = vDom[2] ? vDom[2].filter(isDefined) : [] // !! mutates vDom !!
 	    children = vDom[2]
 	
 	    if (attrs) {

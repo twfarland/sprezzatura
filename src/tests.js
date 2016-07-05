@@ -39,6 +39,11 @@ function checkUpdate (parent, vDomA, vDomB) {
 }
 
 
+function Child ({ a }) {
+	return [Div, {}, [a]]
+}
+
+
 console.log([
 
 	vDomToDom(false) === undefined,
@@ -58,6 +63,9 @@ console.log([
 	domToHtmlString(vDomToDom([Div, {}, ['a','b','c']])) === '<div><span>a</span><span>b</span><span>c</span></div>',
 	domToHtmlString(vDomToDom([Div, {}, ['a',false,'b',undefined,null,'c',null]])) === '<div><span>a</span><span>b</span><span>c</span></div>',
 
+	domToHtmlString(vDomToDom([Child, { a: 1 }])) === '<div><span>1</span></div>',
+	domToHtmlString(vDomToDom([Div, {}, [[Child, { a: 1 }]]])) === '<div><div><span>1</span></div></div>',
+
 	checkUpdate(parent, [Div, {}, []], [Div, {}, ['a']]),
 	checkUpdate(parent, [Div, {}, []], [Br]),
 	checkUpdate(parent, [Div], 'a'),
@@ -66,7 +74,61 @@ console.log([
 	checkUpdate(parent, 1, 0),
 	checkUpdate(parent, [Div, {}, ['a','b','c']], [Div, {}, ['123']]),
 	checkUpdate(parent, [Div, {}, ['a',false,'b','c']], [Div, {}, ['c',false,'a','b']]),
-	checkUpdate(parent, [Div, {}, [undefined,undefined,'a',false,'b','c']], [Div, {}, ['c','d',123,false,'a','b',undefined]])
+	checkUpdate(parent, [Div, {}, [undefined,undefined,'a',false,'b','c']], [Div, {}, ['c','d',123,false,'a','b',undefined]]),
+
+	checkUpdate(parent, 
+		[Div, {}, [
+			[Div, { key: 1 }],
+			[Div, { key: 2 }],
+			[Div, { key: 3 }],
+		]],
+		[Div, {}, [
+			[Div, { key: 3 }],
+			[Div, { key: 2 }],
+			[Div, { key: 1 }],
+		]]
+	),
+	checkUpdate(parent, 
+		[Div, {}, [
+			[Div, { key: 1 }],
+			[Div, { key: 3 }],
+		]],
+		[Div, {}, [
+			[Div, { key: 3 }],
+			[Div, { key: 2 }],
+			[Div, { key: 1 }],
+		]]
+	),
+	checkUpdate(parent, 
+		[Div, {}, [
+			[Div, { key: 1 }],
+			[Div, { key: 2 }],
+			[Div, { key: 3 }],
+		]],
+		[Div, {}, [
+			[Div, { key: 2 }]
+		]]
+	),
+	checkUpdate(parent, 
+		[Div, {}, [
+			[Div, { key: 1 }],
+			[Div, { key: 2 }],
+			[Div, { key: 3 }],
+		]],
+		[Div, {}, []]
+	),
+	checkUpdate(parent, 
+		[Div, {}, []],
+		[Div, {}, [
+			[Div, { key: 3 }],
+			[Div, { key: 2 }],
+			[Div, { key: 1 }],
+		]]
+	),
+
+	checkUpdate(parent, [Child, { a: 1 }], [Child, { a: 2 }]),
+	checkUpdate(parent, [Child, { a: 1 }], [A, { href: '#'}, ['x']]),
+	checkUpdate(parent, [Div, {}, []], [Child, { a: 1 }])		
 ])
 
 

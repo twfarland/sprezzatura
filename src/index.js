@@ -95,8 +95,7 @@ function isDefined (v) {
 // vDom -> vDom -> domNode -> domNode
 function updateChildren (current, next, D) {
 
-    // filters out empty children
-    next[2] = next[2] ? next[2].filter(isDefined) : []
+    next[2] = next[2] ? next[2].filter(isDefined) : [] // !! mutates vDom !!
 
     dift.default(
 
@@ -336,8 +335,7 @@ function vNodeToHtmlString (vDom) {
     var c
     var res
 
-    // filters out empty children
-    vDom[2] = vDom[2] ? vDom[2].filter(isDefined) : []
+    vDom[2] = vDom[2] ? vDom[2].filter(isDefined) : [] // !! mutates vDom !!
     children = vDom[2]
 
     if (attrs) {
