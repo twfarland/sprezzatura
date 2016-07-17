@@ -180,7 +180,6 @@
 		checkUpdate(parent, [Div, {}, []], [Child, { a: 1 }])		
 	])
 	
-	
 
 
 /***/ },

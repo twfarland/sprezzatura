@@ -1,7 +1,5 @@
 # Sprezzatura
 
-### Note: Currently untested / experimental - use at your own risk
-
 A small, performant virtual dom library that uses pure functions and javascript literals to describe the dom.
 
 [https://en.wikipedia.org/wiki/Sprezzatura](Sprezzatura) is my favourite word, it is an italian word meaning "a certain nonchalance, so as to conceal all art and make whatever one does or says appear to be without effort and almost without any thought about it." To me, this sounds to be exactly what a virtual dom is doing.
@@ -59,12 +57,3 @@ Some concrete examples of valid `vDom`s:
 ```
 
 
-
-
-
-
-## Event binding
-
-
-
-## Lifecycle methods
