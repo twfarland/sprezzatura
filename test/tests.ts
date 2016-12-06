@@ -1,22 +1,23 @@
-var sprezzatura 		= require('./index.js')
+import { 
+	vDomToHtmlString, 
+	vDomToDom, 
+	updateDom,
+	VChild,
+	VNodeChild
+} from '../src/index'
 
 
-var vDomToHtmlString 	= sprezzatura.vDomToHtmlString
-var vDomToDom 			= sprezzatura.vDomToDom
-var updateDom 			= sprezzatura.updateDom
+const Div = 'div'
+const A   = 'a'
+const Br  = 'br'
 
 
-var Div = 'div'
-var A   = 'a'
-var Br  = 'br'
-
-
-var parent = document.getElementById('tests')
+const parent = document.getElementById('tests')
 
 
 function domToHtmlString (dom) {
 	if (!dom) return undefined
-	var div = document.createElement('div')
+	const div = document.createElement('div')
 	div.appendChild(dom)
 	return div.innerHTML
 }
@@ -31,25 +32,20 @@ function clearNode (node) {
 
 function checkUpdate (parent, vDomA, vDomB) {
 	clearNode(parent)
-	var dom = vDomToDom(vDomA)
-	var vDomB2 = vDomB instanceof Array ? vDomB.slice() : vDomB
+	const dom = vDomToDom(vDomA)
+	const vDomB2 = vDomB instanceof Array ? vDomB.slice() : vDomB
 	parent.appendChild(dom)
 	updateDom(vDomA, vDomB, dom, parent)
 	return domToHtmlString(parent.firstChild) === vDomToHtmlString(vDomB2)
 }
 
 
-function Child ({ a }) {
+function Child ({ a }): VNodeChild {
 	return [Div, {}, [a]]
 }
 
 
-console.log([
-
-	vDomToDom(false) === undefined,
-	vDomToDom(null) === undefined,
-	vDomToDom(undefined) === undefined,
-	vDomToDom([]) === undefined,
+window['results'] = [
 
 	domToHtmlString(vDomToDom('a')) === '<span>a</span>',
 	domToHtmlString(vDomToDom(1)) === '<span>1</span>',
@@ -129,5 +125,6 @@ console.log([
 	checkUpdate(parent, [Child, { a: 1 }], [Child, { a: 2 }]),
 	checkUpdate(parent, [Child, { a: 1 }], [A, { href: '#'}, ['x']]),
 	checkUpdate(parent, [Div, {}, []], [Child, { a: 1 }])		
-])
+]
 
+console.log(window['results'])

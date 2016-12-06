@@ -6,7 +6,9 @@ A small, performant virtual dom library that uses pure functions and javascript 
 
 It relies only on the excellent [https://github.com/ashaffer/dift](dift) library and adopts the performance enhancing heuristics pioneered by React.
 
-It was designed for use in combination with Acto, which replaces Redux, but you can easily use it with other libraries or standalone.
+It was designed for use in combination with [https://github.com/twfarland/acto](acto), which replaces Redux, but you can easily use it with other libraries or standalone.
+
+Written in typescript.
 
 ### Install
 
@@ -20,27 +22,36 @@ It was designed for use in combination with Acto, which replaces Redux, but you 
 
 Views are just pure functions that take an object of properties and return a `vDom`, which is a javascript literal of an acceptable form that maps closely to html:
 
-	vAtom :: 
-	    String
-	    Number
+```typescript
+type VDomType = number
+type Key = string | number
+type VAtom = string | number | boolean | void | null
 
-	vNode :: 
-	    [String] 
-	    [String, { attrs }] 
-	    [String, { attrs }, [vDom ...]] 
+interface VChildConstructor {
+    (props: any): VDom
+}
 
-	vChild ::
-	    [Function, { props }]
+type VNodeSingle = [string] // ['div']
+type VNodeAttrs  = [string, any] // ['img', { src: '/pic.png' }]
+type VNodeChild  = [string, any, any[]] // ['a', { href: '/' }, ['home']]
 
-	vDom :: 
-	    vAtom
-	    vNode
-	    vChild
-	    vNull
+type VNode = 
+    VNodeSingle 
+    | VNodeAttrs 
+    | VNodeChild 
+
+type VChild =
+    [VChildConstructor, any]
+
+type VDom =
+    VAtom
+    | VNode 
+    | VChild
+```
 
 Some concrete examples of valid `vDom`s:
 
-```javascript
+```typescript
 
 ['hr']
 
@@ -55,5 +66,3 @@ Some concrete examples of valid `vDom`s:
 ]]
 
 ```
-
-
