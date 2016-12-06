@@ -2,11 +2,11 @@
 
 A small, performant virtual dom library that uses pure functions and javascript literals to describe the dom.
 
-[https://en.wikipedia.org/wiki/Sprezzatura](Sprezzatura) is my favourite word, it is an italian word meaning "a certain nonchalance, so as to conceal all art and make whatever one does or says appear to be without effort and almost without any thought about it." To me, this sounds to be exactly what a virtual dom is doing.
+[Sprezzatura](https://en.wikipedia.org/wiki/Sprezzatura) is my favourite word, it is an italian word meaning "a certain nonchalance, so as to conceal all art and make whatever one does or says appear to be without effort and almost without any thought about it." To me, this sounds to be exactly what a virtual dom is doing.
 
-It relies only on the excellent [https://github.com/ashaffer/dift](dift) library and adopts the performance enhancing heuristics pioneered by React.
+It relies only on the excellent [dift](https://github.com/ashaffer/dift) library and adopts the performance enhancing heuristics pioneered by React.
 
-It was designed for use in combination with [https://github.com/twfarland/acto](acto), which replaces Redux, but you can easily use it with other libraries or standalone.
+It was designed for use in combination with [acto](https://github.com/twfarland/acto), which replaces Redux, but you can easily use it with other libraries or standalone.
 
 Written in typescript.
 

@@ -26,7 +26,7 @@ export type Key = string | number
 export type VAtom = string | number | boolean | void | null
 
 
-export interface VChildConstructor {
+export interface VDomView {
     (props: any): VDom
 }
 
@@ -47,7 +47,7 @@ export type VNode =
     | VNodeChild 
 
 export type VChild =
-    [VChildConstructor, any]
+    [VDomView, any]
 
 export type VDom =
     VAtom
