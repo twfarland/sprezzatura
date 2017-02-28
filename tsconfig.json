@@ -1,10 +1,4 @@
 {
-    "compileOnSave": true,
-    "compilerOptions": {
-        "allowJs": true
-    },
-    "files": [
-        "src/index.ts",
-        "test/tests.ts"
-    ]
+    "allowJs": true,
+    "compilerOptions": {}
 }
