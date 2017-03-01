@@ -166,6 +166,7 @@ export function updateDom (current: VDom, next: VDom, D: Node, DParent: Node): N
 
                 case VCHILD:
                     const hooks = next[1] && next[1][HOOKS]
+                    
                     if (hooks && hooks.shouldUpdate ? 
                         hooks.shouldUpdate(current[1], next[1]) : 
                         next[1] && current[1] && next[1] !== current[1]) {
