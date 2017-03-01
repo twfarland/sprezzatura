@@ -100,7 +100,7 @@ function updateDom(current, next, D, DParent) {
                     break;
                 case VCHILD:
                     var hooks = next[1] && next[1][HOOKS];
-                    if (hooks.shouldUpdate ?
+                    if (hooks && hooks.shouldUpdate ?
                         hooks.shouldUpdate(current[1], next[1]) :
                         next[1] && current[1] && next[1] !== current[1]) {
                         next[2] = next[0](next[1]);
