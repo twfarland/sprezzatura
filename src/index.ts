@@ -12,6 +12,7 @@ const SELECTED        = 'selected'
 const DISABLED        = 'disabled'
 const FOCUS           = 'focus'
 const ON              = 'on'
+const HOOKS           = 'hooks'
 const EMPTYSTRING     = ''
 
 const VOID_ELEMENTS = { area:1, base:1, br:1, col:1, command:1, embed:1, hr:1, img:1, input:1, keygen:1, link:1, meta:1, param:1, source:1, track:1, wbr:1 }
@@ -164,8 +165,10 @@ export function updateDom (current: VDom, next: VDom, D: Node, DParent: Node): N
                     break
 
                 case VCHILD:
-                    if (next[0].shouldUpdate ? 
-                        next[0].shouldUpdate(current[1], next[1]) : 
+                    const hooks = next[1] && next[1][HOOKS]
+                    
+                    if (hooks && hooks.shouldUpdate ? 
+                        hooks.shouldUpdate(current[1], next[1]) : 
                         next[1] && current[1] && next[1] !== current[1]) {
 
                         next[2] = next[0](next[1])
@@ -203,10 +206,11 @@ function updateAttributes (currentAttrs: any, nextAttrs: any, D: Node): Node {
         currentVal = currentAttrs[a]
         nextVal = nextAttrs[a]
 
-        if (nextVal === undefined || nextVal === null || nextVal === false) {
+        if (nextVal === undefined || nextVal === null || nextVal === false || nextVal === EMPTYSTRING) {
 
             switch (a) {
                 case ON:
+                case HOOKS:
                 case KEY:
                     break
                 case CHECKED:
@@ -232,12 +236,13 @@ function updateAttributes (currentAttrs: any, nextAttrs: any, D: Node): Node {
         currentVal = currentAttrs[a]
         nextVal = nextAttrs[a]
 
-        if (!(nextVal === undefined || nextVal === null || nextVal === false) && 
+        if (!(nextVal === undefined || nextVal === null || nextVal === false || nextVal === EMPTYSTRING) && 
             nextVal !== currentVal &&
             typeof nextVal !== FUNCTION) {
 
             switch (a) {
                 case ON:
+                case HOOKS:
                 case KEY:
                     break  
                 case CHECKED:
@@ -328,7 +333,7 @@ export function vNodeToHtmlString (vDom: VDom): string {
     if (attrs) {
         for (a in attrs) {
             val = attrs[a]
-            if (!(val === undefined || val === null || val === false) && a !== KEY && a !== ON) { 
+            if (!(val === undefined || val === null || val === false) && a !== KEY && a !== ON && a !== HOOKS) { 
                 attrPairs.push(a + '="' + val + '"') 
             }
         }
@@ -361,7 +366,7 @@ export function vDomToDom (vDom: VDom): Node {
             var el = document.createElement('div')
             el.innerHTML = vDomToHtmlString(vDom)
             var dom = el.firstChild
-            bindEvents(vDom, dom)
+            bindEventsAndMount(vDom, dom)
             return dom
 
         case VNULL:
@@ -369,13 +374,15 @@ export function vDomToDom (vDom: VDom): Node {
     }
 }
 
-function bindEvents (vDom: VDom, D: Node): void {
+function bindEventsAndMount (vDom: VDom, D: Node): void {
 
     var vType = getType(vDom)
     var vNode
     var vAttrs
     var evts
     var evt
+    var hooks
+    var hook
     var child
     var children
 
@@ -392,11 +399,16 @@ function bindEvents (vDom: VDom, D: Node): void {
                  D.addEventListener(evt, evts[evt])
             }
         }
+        hooks = vAttrs[HOOKS]
+        if (hooks && hooks.mounted) {
+            hooks.mounted(D, vAttrs)
+        }
     }
 
     if (children) {
         for (child = 0; child < children.length; child++) {
-            bindEvents(children[child], D.childNodes[child])
+            bindEventsAndMount(children[child], D.childNodes[child])
         }
     }
 }
+

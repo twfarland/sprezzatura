@@ -45,6 +45,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	exports.__esModule = true;
 	var index_1 = __webpack_require__(1);
 	var Div = 'div';
 	var A = 'a';
@@ -142,6 +143,7 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	exports.__esModule = true;
 	var dift_1 = __webpack_require__(2);
 	var STRING = 'string';
 	var NUMBER = 'number';
@@ -153,6 +155,7 @@
 	var DISABLED = 'disabled';
 	var FOCUS = 'focus';
 	var ON = 'on';
+	var HOOKS = 'hooks';
 	var EMPTYSTRING = '';
 	var VOID_ELEMENTS = { area: 1, base: 1, br: 1, col: 1, command: 1, embed: 1, hr: 1, img: 1, input: 1, keygen: 1, link: 1, meta: 1, param: 1, source: 1, track: 1, wbr: 1 };
 	var VATOM = 0;
@@ -241,8 +244,9 @@
 	                    updateChildren(current, next, D);
 	                    break;
 	                case VCHILD:
-	                    if (next[0].shouldUpdate ?
-	                        next[0].shouldUpdate(current[1], next[1]) :
+	                    var hooks = next[1] && next[1][HOOKS];
+	                    if (hooks && hooks.shouldUpdate ?
+	                        hooks.shouldUpdate(current[1], next[1]) :
 	                        next[1] && current[1] && next[1] !== current[1]) {
 	                        next[2] = next[0](next[1]);
 	                        updateAttributes(current[2][1] || {}, next[2][1] || {}, D);
@@ -274,9 +278,10 @@
 	    for (a in currentAttrs) {
 	        currentVal = currentAttrs[a];
 	        nextVal = nextAttrs[a];
-	        if (nextVal === undefined || nextVal === null || nextVal === false) {
+	        if (nextVal === undefined || nextVal === null || nextVal === false || nextVal === EMPTYSTRING) {
 	            switch (a) {
 	                case ON:
+	                case HOOKS:
 	                case KEY:
 	                    break;
 	                case CHECKED:
@@ -299,11 +304,12 @@
 	    for (a in nextAttrs) {
 	        currentVal = currentAttrs[a];
 	        nextVal = nextAttrs[a];
-	        if (!(nextVal === undefined || nextVal === null || nextVal === false) &&
+	        if (!(nextVal === undefined || nextVal === null || nextVal === false || nextVal === EMPTYSTRING) &&
 	            nextVal !== currentVal &&
 	            typeof nextVal !== FUNCTION) {
 	            switch (a) {
 	                case ON:
+	                case HOOKS:
 	                case KEY:
 	                    break;
 	                case CHECKED:
@@ -382,7 +388,7 @@
 	    if (attrs) {
 	        for (a in attrs) {
 	            val = attrs[a];
-	            if (!(val === undefined || val === null || val === false) && a !== KEY && a !== ON) {
+	            if (!(val === undefined || val === null || val === false) && a !== KEY && a !== ON && a !== HOOKS) {
 	                attrPairs.push(a + '="' + val + '"');
 	            }
 	        }
@@ -409,19 +415,21 @@
 	            var el = document.createElement('div');
 	            el.innerHTML = vDomToHtmlString(vDom);
 	            var dom = el.firstChild;
-	            bindEvents(vDom, dom);
+	            bindEventsAndMount(vDom, dom);
 	            return dom;
 	        case VNULL:
 	            return undefined;
 	    }
 	}
 	exports.vDomToDom = vDomToDom;
-	function bindEvents(vDom, D) {
+	function bindEventsAndMount(vDom, D) {
 	    var vType = getType(vDom);
 	    var vNode;
 	    var vAttrs;
 	    var evts;
 	    var evt;
+	    var hooks;
+	    var hook;
 	    var child;
 	    var children;
 	    if (vType === VATOM || vType === VNULL) {
@@ -437,10 +445,14 @@
 	                D.addEventListener(evt, evts[evt]);
 	            }
 	        }
+	        hooks = vAttrs[HOOKS];
+	        if (hooks && hooks.mounted) {
+	            hooks.mounted(D, vAttrs);
+	        }
 	    }
 	    if (children) {
 	        for (child = 0; child < children.length; child++) {
-	            bindEvents(children[child], D.childNodes[child]);
+	            bindEventsAndMount(children[child], D.childNodes[child]);
 	        }
 	    }
 	}

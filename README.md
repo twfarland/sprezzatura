@@ -1,14 +1,12 @@
 # Sprezzatura
 
-A small, performant virtual dom library that uses pure functions and javascript literals to describe the dom.
+A small, performant virtual dom library that uses pure functions and javascript literals to describe the dom. Written in typescript.
 
 [Sprezzatura](https://en.wikipedia.org/wiki/Sprezzatura) is my favourite word, it is an italian word meaning "a certain nonchalance, so as to conceal all art and make whatever one does or says appear to be without effort and almost without any thought about it." To me, this sounds to be exactly what a virtual dom is doing.
 
-It relies only on the excellent [dift](https://github.com/ashaffer/dift) library and adopts the performance enhancing heuristics pioneered by React.
+It relies only on the excellent [dift](https://github.com/ashaffer/dift) library and follows the performance enhancing heuristics pioneered by React.
 
-It was designed for use in combination with [acto](https://github.com/twfarland/acto), which replaces Redux, but you can easily use it with other libraries or standalone.
-
-Written in typescript.
+It was designed for use in combination with my FRP/Signals library [acto](https://github.com/twfarland/acto), which can comfortably replace Redux, but you can certainly use it with other libraries or standalone.
 
 ### Install
 
@@ -18,22 +16,48 @@ Written in typescript.
 
 	import { updateDom, vDomToDom, vDomToHtmlString } from 'sprezzatura'
 
-## Defining views
+### Defining views
 
-Views are just pure functions that take an object of properties and return a `vDom`, which is a javascript literal of an acceptable form that maps closely to html:
+Views are just pure functions that take an object of properties and return a `vDom`, which is a javascript literal of an acceptable form that maps closely to html. 
+We treat an array like a tuple, relying on typescript to enforce the correct form:
 
 ```typescript
-type VDomType = number
-type Key = string | number
-type VAtom = string | number | boolean | void | null
+const Div = 'div'
+
+function helloView ({ name }): VDom {
+    return [Div, { id: 'hello' }, [
+        "Hello, " + name
+    ]]
+}
+```
+
+You can also nest views, props are passed down as the second element in the array:
+
+```typescript
+const Div = 'div'
+const A = 'a'
+
+function linkView ({ name }): VDom {
+    return [A, { href:  }, []]
+}
+```
+
+#### The type of VDom
+
+```typescript
+
+type Attrs = { [key: string]: any; }
+type Props = Attrs
 
 interface VChildConstructor {
-    (props: any): VDom
+    (props: Props): VDom
 }
 
-type VNodeSingle = [string] // ['div']
-type VNodeAttrs  = [string, any] // ['img', { src: '/pic.png' }]
-type VNodeChild  = [string, any, any[]] // ['a', { href: '/' }, ['home']]
+type VAtom = string | number | boolean | void | null
+type VNodeSingle = [string]
+type VNodeAttrs  = [string, Attrs]
+type VNodeChild  = [string, Attrs, any[]] 
+// ^ actually [string, Attrs, VDom[]], but typescript doesn't support recursive types yet
 
 type VNode = 
     VNodeSingle 
@@ -41,7 +65,7 @@ type VNode =
     | VNodeChild 
 
 type VChild =
-    [VChildConstructor, any]
+    [VChildConstructor, Props]
 
 type VDom =
     VAtom
@@ -49,20 +73,6 @@ type VDom =
     | VChild
 ```
 
-Some concrete examples of valid `vDom`s:
+## Mounting
 
-```typescript
-
-['hr']
-
-['input', { type: 'text', value: 123 }]
-
-['a', { href: '/' }, ['home']]
-
-['div', {}, [
-	'child1',
-	['b', {}, ['child2']],
-	'child3'
-]]
-
-```
+## Improving render performance
