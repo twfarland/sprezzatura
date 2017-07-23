@@ -206,7 +206,7 @@ function updateAttributes (currentAttrs: any, nextAttrs: any, D: Node): Node {
         currentVal = currentAttrs[a]
         nextVal = nextAttrs[a]
 
-        if (nextVal === undefined || nextVal === null || nextVal === false) {
+        if (nextVal === undefined || nextVal === null || nextVal === false || nextVal === EMPTYSTRING) {
 
             switch (a) {
                 case ON:
@@ -236,7 +236,7 @@ function updateAttributes (currentAttrs: any, nextAttrs: any, D: Node): Node {
         currentVal = currentAttrs[a]
         nextVal = nextAttrs[a]
 
-        if (!(nextVal === undefined || nextVal === null || nextVal === false) && 
+        if (!(nextVal === undefined || nextVal === null || nextVal === false || nextVal === EMPTYSTRING) && 
             nextVal !== currentVal &&
             typeof nextVal !== FUNCTION) {
 

@@ -133,7 +133,7 @@ function updateAttributes(currentAttrs, nextAttrs, D) {
     for (a in currentAttrs) {
         currentVal = currentAttrs[a];
         nextVal = nextAttrs[a];
-        if (nextVal === undefined || nextVal === null || nextVal === false) {
+        if (nextVal === undefined || nextVal === null || nextVal === false || nextVal === EMPTYSTRING) {
             switch (a) {
                 case ON:
                 case HOOKS:
@@ -159,7 +159,7 @@ function updateAttributes(currentAttrs, nextAttrs, D) {
     for (a in nextAttrs) {
         currentVal = currentAttrs[a];
         nextVal = nextAttrs[a];
-        if (!(nextVal === undefined || nextVal === null || nextVal === false) &&
+        if (!(nextVal === undefined || nextVal === null || nextVal === false || nextVal === EMPTYSTRING) &&
             nextVal !== currentVal &&
             typeof nextVal !== FUNCTION) {
             switch (a) {
