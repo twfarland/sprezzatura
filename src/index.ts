@@ -60,7 +60,7 @@ function getType (vDom: VDom): VDomType {
     if (vDom instanceof Array) {
         return typeof vDom[0] === FUNCTION ? VCHILD : VNODE
 
-    } else if ((typeof vDom === STRING && vDom !== "") || typeof vDom === NUMBER) {
+    } else if (typeof vDom === STRING || typeof vDom === NUMBER) {
         return VATOM
 
     } else {
@@ -104,7 +104,7 @@ function updateChildren (current: VDom, next: VDom, D: Node): Node {
 
             var newNode
 
-            switch (type){
+            switch (type) {
                 case CREATE: // null, new, posToCreate
                     newNode = vDomToDom(next.vDom)
                     if (newNode) D.insertBefore(newNode, D.childNodes[pos] || null)

@@ -21,7 +21,7 @@ function getType(vDom) {
     if (vDom instanceof Array) {
         return typeof vDom[0] === FUNCTION ? VCHILD : VNODE;
     }
-    else if ((typeof vDom === STRING && vDom !== "") || typeof vDom === NUMBER) {
+    else if (typeof vDom === STRING || typeof vDom === NUMBER) {
         return VATOM;
     }
     else {
