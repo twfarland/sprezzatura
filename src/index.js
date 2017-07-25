@@ -21,7 +21,7 @@ function getType(vDom) {
     if (vDom instanceof Array) {
         return typeof vDom[0] === FUNCTION ? VCHILD : VNODE;
     }
-    else if (typeof vDom === STRING || typeof vDom === NUMBER) {
+    else if ((typeof vDom === STRING && vDom !== "") || typeof vDom === NUMBER) {
         return VATOM;
     }
     else {
@@ -45,7 +45,7 @@ function getKey(v) {
     return v.key;
 }
 function isDefined(v) {
-    return !(v === false || v === undefined || v === null);
+    return !(v === false || v === undefined || v === null || v === "");
 }
 function updateChildren(current, next, D) {
     next[2] = next[2] ? next[2].filter(isDefined) : []; // !! mutates vDom !!

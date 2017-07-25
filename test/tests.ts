@@ -44,7 +44,6 @@ function Child ({ a }): VNodeChild {
 	return [Div, {}, [a]]
 }
 
-
 window['results'] = [
 
 	domToHtmlString(vDomToDom('a')) === '<span>a</span>',
@@ -62,6 +61,8 @@ window['results'] = [
 	domToHtmlString(vDomToDom([Child, { a: 1 }])) === '<div><span>1</span></div>',
 	domToHtmlString(vDomToDom([Div, {}, [[Child, { a: 1 }]]])) === '<div><div><span>1</span></div></div>',
 
+	domToHtmlString(vDomToDom([Div, {}, ['']])) === '<div></div>',
+
 	checkUpdate(parent, [Div, {}, []], [Div, {}, ['a']]),
 	checkUpdate(parent, [Div, {}, []], [Br]),
 	checkUpdate(parent, [Div], 'a'),
@@ -71,6 +72,8 @@ window['results'] = [
 	checkUpdate(parent, [Div, {}, ['a','b','c']], [Div, {}, ['123']]),
 	checkUpdate(parent, [Div, {}, ['a',false,'b','c']], [Div, {}, ['c',false,'a','b']]),
 	checkUpdate(parent, [Div, {}, [undefined,undefined,'a',false,'b','c']], [Div, {}, ['c','d',123,false,'a','b',undefined]]),
+
+	checkUpdate(parent, [Div, {}, ['string']], [Div, {}, ['']]),
 
 	checkUpdate(parent, 
 		[Div, {}, [

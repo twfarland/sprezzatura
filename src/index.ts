@@ -42,16 +42,16 @@ export type VNodeSingle = [string] // Possible improvement - encode valid tag st
 export type VNodeAttrs  = [string, any] // actually an object with any key/vals 
 export type VNodeChild  = [string, any, any[]] // actually VDom[], but ts can't do recursive type defs yet 
 
-export type VNode = 
-    VNodeSingle 
+export type VNode
+    = VNodeSingle 
     | VNodeAttrs 
     | VNodeChild 
 
 export type VChild =
     [VDomView, any]
 
-export type VDom =
-    VAtom
+export type VDom
+    = VAtom
     | VNode 
     | VChild
 
@@ -60,7 +60,7 @@ function getType (vDom: VDom): VDomType {
     if (vDom instanceof Array) {
         return typeof vDom[0] === FUNCTION ? VCHILD : VNODE
 
-    } else if (typeof vDom === STRING || typeof vDom === NUMBER) {
+    } else if ((typeof vDom === STRING && vDom !== "") || typeof vDom === NUMBER) {
         return VATOM
 
     } else {
@@ -88,7 +88,7 @@ function getKey (v: DomPosn): Key {
 }
 
 function isDefined (v: VDom): boolean {
-    return !(v === false || v === undefined || v === null)
+    return !(v === false || v === undefined || v === null || v === "")
 }
 
 function updateChildren (current: VDom, next: VDom, D: Node): Node {
