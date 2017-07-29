@@ -3,13 +3,15 @@ import {
 	vDomToDom, 
 	updateDom,
 	VChild,
-	VNodeChild
+	VNodeChild,
+	prepChildren
 } from '../src/index'
 
 
 const Div = 'div'
 const A   = 'a'
 const Br  = 'br'
+const Textarea = 'textarea'
 
 
 const parent = document.getElementById('tests')
@@ -44,24 +46,28 @@ function Child ({ a }): VNodeChild {
 	return [Div, {}, [a]]
 }
 
+
 window['results'] = [
 
-	domToHtmlString(vDomToDom('a')) === '<span>a</span>',
-	domToHtmlString(vDomToDom(1)) === '<span>1</span>',
-	domToHtmlString(vDomToDom(0)) === '<span>0</span>',
+	domToHtmlString(vDomToDom('a')) === 'a',
+	domToHtmlString(vDomToDom(1)) === '1',
+	domToHtmlString(vDomToDom(0)) === '0',
 	
 	domToHtmlString(vDomToDom([Br])) === '<br>',
 	domToHtmlString(vDomToDom([Div, {}, []])) === '<div></div>',
 	domToHtmlString(vDomToDom([A, { name: 'x' }])) === '<a name="x"></a>',
-	domToHtmlString(vDomToDom([A, { href: '#' }, ['abc']])) === '<a href="#"><span>abc</span></a>',
-	domToHtmlString(vDomToDom([Div, {}, [ 'a', [Div, {}, ['b']], 'c' ]])) === '<div><span>a</span><div><span>b</span></div><span>c</span></div>',
-	domToHtmlString(vDomToDom([Div, {}, ['a','b','c']])) === '<div><span>a</span><span>b</span><span>c</span></div>',
-	domToHtmlString(vDomToDom([Div, {}, ['a',false,'b',undefined,null,'c',null]])) === '<div><span>a</span><span>b</span><span>c</span></div>',
+	domToHtmlString(vDomToDom([A, { href: '#' }, ['abc']])) === '<a href="#">abc</a>',
+	domToHtmlString(vDomToDom([Div, {}, [ 'a', [Div, {}, ['b']], 'c' ]])) === '<div>a<div>b</div>c</div>',
 
-	domToHtmlString(vDomToDom([Child, { a: 1 }])) === '<div><span>1</span></div>',
-	domToHtmlString(vDomToDom([Div, {}, [[Child, { a: 1 }]]])) === '<div><div><span>1</span></div></div>',
+	domToHtmlString(vDomToDom([Div, {}, ['a','b','c']])) === '<div>a b c</div>',
+	domToHtmlString(vDomToDom([Div, {}, ['a',false,'b',undefined,null,'c',null]])) === '<div>a b c</div>',
+
+	domToHtmlString(vDomToDom([Child, { a: 1 }])) === '<div>1</div>',
+	domToHtmlString(vDomToDom([Div, {}, [[Child, { a: 1 }]]])) === '<div><div>1</div></div>',
 
 	domToHtmlString(vDomToDom([Div, {}, ['']])) === '<div></div>',
+
+	domToHtmlString(vDomToDom([Textarea, {}, ['test']])) === '<textarea>test</textarea>',
 
 	checkUpdate(parent, [Div, {}, []], [Div, {}, ['a']]),
 	checkUpdate(parent, [Div, {}, []], [Br]),
@@ -74,6 +80,8 @@ window['results'] = [
 	checkUpdate(parent, [Div, {}, [undefined,undefined,'a',false,'b','c']], [Div, {}, ['c','d',123,false,'a','b',undefined]]),
 
 	checkUpdate(parent, [Div, {}, ['string']], [Div, {}, ['']]),
+
+	checkUpdate(parent, [Textarea, {}, []], [Textarea, {}, ['test']]),
 
 	checkUpdate(parent, 
 		[Div, {}, [
@@ -127,7 +135,8 @@ window['results'] = [
 
 	checkUpdate(parent, [Child, { a: 1 }], [Child, { a: 2 }]),
 	checkUpdate(parent, [Child, { a: 1 }], [A, { href: '#'}, ['x']]),
-	checkUpdate(parent, [Div, {}, []], [Child, { a: 1 }])		
+	checkUpdate(parent, [Div, {}, []], [Child, { a: 1 }])	
+	
 ]
 
 console.log(window['results'])

@@ -48,7 +48,7 @@ function isDefined(v) {
     return !(v === false || v === undefined || v === null || v === "");
 }
 function updateChildren(current, next, D) {
-    next[2] = next[2] ? next[2].filter(isDefined) : []; // !! mutates vDom !!
+    next[2] = next[2] ? prepChildren(next[2]) : []; // !! mutates vDom !!
     dift_1["default"](groupChildren(current[2] || [], D.childNodes), groupChildren(next[2]), function effect(type, current, next, pos) {
         var newNode;
         switch (type) {
@@ -223,12 +223,39 @@ function vDomToHtmlString(vDom) {
         case VNODE:
             return vNodeToHtmlString(vDom);
         case VATOM:
-            return '<span>' + vDom + '</span>';
+            return String(vDom);
         default:
             return '';
     }
 }
 exports.vDomToHtmlString = vDomToHtmlString;
+// strips out undefined children and joins any neighbouring strings
+// e.g: [null, "a", "b", false, 1, ["div", {}, []], "d"] => ["a b 1",["div",{},[]],"d"]
+// TODO: a single loop that strips undefined and joins strings
+function prepChildren(children) {
+    var prevType;
+    var prevI;
+    var i;
+    var defined = children.filter(isDefined); // strip out undefined
+    var res = [];
+    var v;
+    var vType;
+    // join any subsequent atoms into text nodes
+    for (i = 0; i < defined.length; i++) {
+        v = defined[i];
+        vType = getType(v);
+        if (vType === VATOM && prevType === VATOM) {
+            res[prevI] += " " + v;
+        }
+        else {
+            res.push(v);
+            prevI = i;
+            prevType = vType;
+        }
+    }
+    return res;
+}
+exports.prepChildren = prepChildren;
 function vNodeToHtmlString(vDom) {
     var tag = vDom[0];
     var attrs = vDom[1];
@@ -238,7 +265,7 @@ function vNodeToHtmlString(vDom) {
     var attrPairs = [];
     var c;
     var res;
-    vDom[2] = vDom[2] ? vDom[2].filter(isDefined) : []; // !! mutates vDom !!
+    vDom[2] = vDom[2] ? prepChildren(vDom[2]) : []; // !! mutates vDom !!
     children = vDom[2];
     if (attrs) {
         for (a in attrs) {
