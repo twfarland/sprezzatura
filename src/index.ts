@@ -93,7 +93,7 @@ function isDefined (v: VDom): boolean {
 
 function updateChildren (current: VDom, next: VDom, D: Node): Node {
 
-    next[2] = next[2] ? next[2].filter(isDefined) : [] // !! mutates vDom !!
+    next[2] = next[2] ? prepChildren(next[2]) : [] // !! mutates vDom !!
 
     dift(
 
@@ -309,11 +309,42 @@ export function vDomToHtmlString (vDom: VDom): string {
             return vNodeToHtmlString(vDom)
 
         case VATOM:
-            return '<span>' + vDom + '</span>'
+            return String(vDom)
 
         default:
             return ''
     }
+}
+
+// strips out undefined children and joins any neighbouring strings
+// e.g: [null, "a", "b", false, 1, ["div", {}, []], "d"] => ["a b 1",["div",{},[]],"d"]
+// TODO: a single loop that strips undefined and joins strings
+export function prepChildren (children: VDom[]): VDom[] {
+
+    var prevType
+    var prevI: number
+    var i: number 
+    var defined = children.filter(isDefined) // strip out undefined
+    var res: VDom[] = []
+    var v: VDom
+    var vType: VDomType
+
+    // join any subsequent atoms into text nodes
+    for (i = 0; i < defined.length; i++) {
+
+        v = defined[i]
+        vType = getType(v)
+
+        if (vType === VATOM && prevType === VATOM) { 
+            res[prevI] += " " + v
+        } else {
+            res.push(v)
+            prevI = i
+            prevType = vType
+        }
+    }
+
+    return res
 }
 
 export function vNodeToHtmlString (vDom: VDom): string {
@@ -327,7 +358,7 @@ export function vNodeToHtmlString (vDom: VDom): string {
     var c
     var res
 
-    vDom[2] = vDom[2] ? vDom[2].filter(isDefined) : [] // !! mutates vDom !!
+    vDom[2] = vDom[2] ? prepChildren(vDom[2]) : [] // !! mutates vDom !!
     children = vDom[2]
 
     if (attrs) {
