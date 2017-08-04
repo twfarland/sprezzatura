@@ -332,7 +332,7 @@ function bindEventsAndMount(vDom, D) {
             hooks.mounted(D, vAttrs);
         }
     }
-    if (children) {
+    if (children && children.length) {
         for (child = 0; child < children.length; child++) {
             bindEventsAndMount(children[child], D.childNodes[child]);
         }

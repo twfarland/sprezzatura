@@ -39,15 +39,16 @@ export interface DomPosn {
 
 export interface VAttrs {
     [prop: string]: any;
+    key?: string | number;
 }
 
-export interface VNode  {
+export interface VNode extends Array<any>  {
     0: string;
     1?: VAttrs;   
     2?: VDom[];
 }
 
-export interface VChild {
+export interface VChild extends Array<any> {
     0: VDomView;
     1: VAttrs;
 }
@@ -438,7 +439,7 @@ function bindEventsAndMount (vDom: VDom, D: Node): void {
         }
     }
 
-    if (children) {
+    if (children && children.length) {
         for (child = 0; child < children.length; child++) {
             bindEventsAndMount(children[child], D.childNodes[child])
         }
