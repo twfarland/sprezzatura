@@ -14,7 +14,7 @@ It was designed for use in combination with my FRP/Signals library [acto](https:
 
 ### Usage
 
-	import { updateDom, vDomToDom, vDomToHtmlString } from 'sprezzatura'
+	import { updateDom, vDomToDom, vDomToHtmlString, VDom } from 'sprezzatura'
 
 ### Defining views
 
@@ -24,10 +24,16 @@ We treat an array like a tuple, relying on typescript to enforce the correct for
 ```typescript
 const Div = 'div'
 
-function helloView ({ name }): VDom {
-    return [Div, { id: 'hello' }, [
-        "Hello, " + name
-    ]]
+interface HelloProps {
+    name: string;
+}
+
+function HelloView ({ name }: HelloProps): VDom {
+    return (
+        [Div, { id: 'hello' }, [
+            "Hello, " + name
+        ]]
+    )
 }
 ```
 
@@ -37,42 +43,53 @@ You can also nest views, props are passed down as the second element in the arra
 const Div = 'div'
 const A = 'a'
 
-function linkView ({ name }): VDom {
-    return [A, { href:  }, []]
+function Parent (): VDom {
+    return (
+        [Div, {}, [
+            [Child, { id: 'a' }],
+            [Child, { id: 'b' }]
+        ]]
+    )
+}
+
+function Child ({ id }): VDom {
+    return [Div, {}, ['id: ' + id]]
 }
 ```
 
-#### The type of VDom
+#### The VDom types / interfaces
 
 ```typescript
 
-type Attrs = { [key: string]: any; }
-type Props = Attrs
+export type VAtom 
+    = string 
+    | number 
+    | boolean 
+    | void 
+    | null
 
-interface VChildConstructor {
-    (props: Props): VDom
+export interface VDomView {
+    (props: VAttrs): VDom;
 }
 
-type VAtom = string | number | boolean | void | null
-type VNodeSingle = [string]
-type VNodeAttrs  = [string, Attrs]
-type VNodeChild  = [string, Attrs, any[]] 
-// ^ actually [string, Attrs, VDom[]], but typescript doesn't support recursive types yet
+export interface VAttrs {
+    [prop: string]: any;
+    key?: string | number;
+}
 
-type VNode = 
-    VNodeSingle 
-    | VNodeAttrs 
-    | VNodeChild 
+export interface VNode extends Array<any>  {
+    0: string;
+    1?: VAttrs;   
+    2?: VDom[];
+}
 
-type VChild =
-    [VChildConstructor, Props]
+export interface VChild extends Array<any> {
+    0: VDomView;
+    1: VAttrs;
+}
 
-type VDom =
-    VAtom
+export type VDom
+    = VAtom
     | VNode 
     | VChild
 ```
-
-## Mounting
-
-## Improving render performance
