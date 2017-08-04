@@ -3,7 +3,7 @@ import {
 	vDomToDom, 
 	updateDom,
 	VChild,
-	VNodeChild,
+	VDom,
 	prepChildren
 } from '../src/index'
 
@@ -42,7 +42,7 @@ function checkUpdate (parent, vDomA, vDomB) {
 }
 
 
-function Child ({ a }): VNodeChild {
+function Child ({ a }): VDom {
 	return [Div, {}, [a]]
 }
 

@@ -26,29 +26,31 @@ export type VDomType = number
 export type Key = string | number
 export type VAtom = string | number | boolean | void | null
 
-
 export interface VDomView {
-    (props: any): VDom
+    (props: VAttrs): VDom;
 }
 
 export interface DomPosn {
-    key:        Key
-    vDom?:      VDom
-    pos:        number
-    element?:   Node
+    key:        Key;
+    vDom?:      VDom;
+    pos:        number;
+    element?:   Node;
 }
 
-export type VNodeSingle = [string] // Possible improvement - encode valid tag strings as a union type?
-export type VNodeAttrs  = [string, any] // actually an object with any key/vals 
-export type VNodeChild  = [string, any, any[]] // actually VDom[], but ts can't do recursive type defs yet 
+export interface VAttrs {
+    [prop: string]: any;
+}
 
-export type VNode
-    = VNodeSingle 
-    | VNodeAttrs 
-    | VNodeChild 
+export interface VNode  {
+    0: string;
+    1?: VAttrs;   
+    2?: VDom[];
+}
 
-export type VChild =
-    [VDomView, any]
+export interface VChild {
+    0: VDomView;
+    1: VAttrs;
+}
 
 export type VDom
     = VAtom
